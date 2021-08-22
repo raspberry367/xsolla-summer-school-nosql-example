@@ -1,0 +1,55 @@
+version: '3'
+
+services:
+  mysql:
+    container_name: xsolla_school_mysql
+    image: mysql:5.7
+    restart: unless-stopped
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_DATABASE: school
+      MYSQL_USER: user
+      MYSQL_PASSWORD: pass
+      MYSQL_ROOT_PASSWORD: root
+    networks:
+      - app-network
+  sphinx:
+    container_name: xsolla_school_sphinx
+    image: stefobark/sphinxdocker
+    restart: unless-stopped
+    volumes:
+      - ./docker/sphinx/:/etc/sphinxsearch/
+    ports:
+      - "9306:9306"
+    networks:
+      - app-network
+  mongo:
+    container_name: xsolla_school_mongo
+    image: mongo:latest
+    restart: always
+    ports:
+      - "27017:27017"
+    networks:
+      - app-network
+  redis:
+    container_name: xsolla_school_redis
+    image: redis:latest
+    ports:
+      - "6380:6379"
+    networks:
+      - app-network
+  clickhouse:
+    container_name: xsolla_school_clickhouse
+    image: yandex/clickhouse-server:latest
+    ports:
+      - "8123:8123"
+    environment:
+      CLICKHOUSE_USER: clickhouse-user
+      CLICKHOUSE_PASSWORD: secret
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
