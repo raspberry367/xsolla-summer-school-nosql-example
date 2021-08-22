@@ -41,17 +41,15 @@ $className = COMMANDS[$commandName];
 $command = new $className($connect, $faker);
 
 if (COMMANDS[$commandName] == EventGenerateCommand::class) {
-    // Указываем подключение
-    $db = new ClickHouseDB\Client([
-        'host' => 'localhost',
-        'port' => '8123',
-        'username' => 'clickhouse-user',
-        'password' => 'secret'
+    $clickhouseConnection = new ClickHouseDB\Client([
+        'host' => $_ENV['CLICKHOUSE_HOST'],
+        'port' => $_ENV['CLICKHOUSE_PORT'],
+        'username' => $_ENV['CLICKHOUSE_USER'],
+        'password' => $_ENV['CLICKHOUSE_PASSWORD']
     ]);
-// Устанавливаем БД
-    $db->database('default');
+    $clickhouseConnection->database('default');
 
-    $command->setClickhouseConnect($db);
+    $command->setClickhouseConnect($clickhouseConnection);
 }
 
 $command->execute();

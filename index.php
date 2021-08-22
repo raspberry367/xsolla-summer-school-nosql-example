@@ -31,41 +31,79 @@ $connectionHandler->addConnection(
 );
 $mysqlConnect = $connectionHandler->getConnection(ConnectionHandler::MYSQL_CONNECT);
 $sphinxSearchConnect = $connectionHandler->getConnection(ConnectionHandler::SPHINX_CONNECT);
-
 $mongoConnection = new MongoDB\Client();
+$redisConnection = new Predis\Client('tcp://' . $_ENV['REDIS_HOST'] . ':' . $_ENV['REDIS_PORT']);
+$clickhouseConnection = new ClickHouseDB\Client([
+    'host' => $_ENV['CLICKHOUSE_HOST'],
+    'port' => $_ENV['CLICKHOUSE_PORT'],
+    'username' => $_ENV['CLICKHOUSE_USER'],
+    'password' => $_ENV['CLICKHOUSE_PASSWORD']
+]);
+// Устанавливаем БД
+$clickhouseConnection->database('default');
 
 # fake string generator
 $faker = Faker\Factory::create();
 
 $documentRepository = new DocumentRepository($mysqlConnect, $sphinxSearchConnect);
+$eventRepository = new EventRepository($mysqlConnect, $clickhouseConnection, $faker);
 
-# Sphinx example
-$sphinx = new SphinxSearchExample($documentRepository);
-//$sphinx->runExampleUsingLike();
-//$sphinx->runExampleUsingSphinx();
+$example = $argv[1];
+$number = $argv[2];
 
-# Mongo example
-$mongoExample = new MongoExample($mongoConnection);
-//$mongoExample->saveUnstructuredItems();
-//$mongoExample->addNewItemsType();
+if ($example == 'redis') {
+    $redisCacheDecorator = new RedisCacheDecorator($redisConnection, $documentRepository);
+    $redisExample = new RedisCacheExample($redisCacheDecorator, $documentRepository);
 
-# Clickhouse example
+    print_r('Run without redis cache' . "\n");
+    $redisExample->runWithoutCache();
 
-$db = new ClickHouseDB\Client([
-    'host' => 'localhost',
-    'port' => '8123',
-    'username' => 'clickhouse-user',
-    'password' => 'secret'
-]);
-// Устанавливаем БД
-$db->database('default');
+    print_r('Run with redis cache decorator' . "\n");
+    $redisExample->runWithRedisCache();
+    return;
+}
 
-$eventRepository = new EventRepository($mysqlConnect, $db, $faker);
-$clickhouseExample = new ClickhouseExample($eventRepository);
-# Example 1
-//$clickhouseExample->runExampleCounting();
-//$clickhouseExample->runExampleCountingUsingMysql();
+if ($example == 'sphinx') {
+    $sphinx = new SphinxSearchExample($documentRepository);
+    echo "Example using mysql like: \n";
+    $sphinx->runExampleUsingLike();
 
-# Example 2
-$clickhouseExample->runExampleCountingByGroup();
-$clickhouseExample->runExampleCountingByGroupUsingMysql();
+    echo "Example using sphinxsearch: \n";
+    $sphinx->runExampleUsingSphinx();
+    return;
+}
+
+if ($example == 'mongo') {
+    $mongoExample = new MongoExample($mongoConnection);
+    if ($number == 1) {
+        $mongoExample->saveUnstructuredItems();
+        return;
+    }
+    if ($number == 2) {
+        $mongoExample->addNewItemsType();
+        return;
+    }
+}
+
+if ($example == 'clickhouse') {
+    $clickhouseExample = new ClickhouseExample($eventRepository);
+
+    if ($number == 1) {
+        echo "Подсчет кол-ва логов, за несколько n дней: \n";
+        echo "Clickhouse: \n";
+        $clickhouseExample->runExampleCounting();
+        echo "Mysql: \n";
+        $clickhouseExample->runExampleCountingUsingMysql();
+        return;
+    }
+    if ($number == 2) {
+        echo 'Выведение списка приложений с указанием сколько event пришло за последние n дней с группировкой по event' . "\n";
+        echo "Clickhouse: \n";
+        $clickhouseExample->runExampleCountingByGroup();
+        echo "Mysql: \n";
+        $clickhouseExample->runExampleCountingByGroupUsingMysql();
+        return;
+    }
+}
+
+echo 'Bad params. See readme.md';

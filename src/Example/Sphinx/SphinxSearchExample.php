@@ -29,7 +29,6 @@ class SphinxSearchExample extends AbstractExample
 
     public function runExampleUsingLike()
     {
-        echo "Пример без использования Sphinx: \n";
         foreach (self::KEYWORDS_SEARCH as $searchKey) {
             echo "Search keyword - $searchKey. \n";
             $this->startStopwatch();
@@ -43,7 +42,6 @@ class SphinxSearchExample extends AbstractExample
 
     public function runExampleUsingSphinx()
     {
-        echo "Пример с исползованием Sphinx: \n";
         foreach (self::KEYWORDS_SEARCH as $searchKey) {
             echo "Search keyword - $searchKey\n";
             $this->startStopwatch();

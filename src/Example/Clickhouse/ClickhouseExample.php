@@ -14,12 +14,8 @@ class ClickhouseExample extends AbstractExample
         $this->eventRepository = $eventRepository;
     }
 
-    /**
-     * Подсчет кол-ва логов, за несколько n дней
-     */
     public function runExampleCounting()
     {
-        echo "Пример подсчета на базе clickhouse: \n";
         for ($i = 0; $i <= 10; $i++) {
             $this->startStopwatch();
             $this->eventRepository->searchClickhouseCountOfEventsByAppId();
@@ -30,12 +26,8 @@ class ClickhouseExample extends AbstractExample
         $this->flushAll();
     }
 
-    /**
-     * Подсчет кол-ва логов, за несколько n дней
-     */
     public function runExampleCountingUsingMysql()
     {
-        echo "Пример подсчета на базе mysql: \n";
         for ($i = 0; $i <= 10; $i++) {
             $this->startStopwatch();
             $this->eventRepository->searchMysqlCountOfEventsByAppId();
@@ -48,7 +40,6 @@ class ClickhouseExample extends AbstractExample
 
     public function runExampleCountingByGroup()
     {
-        echo "Пример подсчета на базе clickhouse: \n";
         for ($i = 0; $i <= 10; $i++) {
             $this->startStopwatch();
             $this->eventRepository->searchClickhouseCountOfEventsByAppIdWithGroupBy();
@@ -61,7 +52,6 @@ class ClickhouseExample extends AbstractExample
 
     public function runExampleCountingByGroupUsingMysql()
     {
-        echo "Пример подсчета на базе mysql: \n";
         for ($i = 0; $i <= 10; $i++) {
             $this->startStopwatch();
             $this->eventRepository->searchMysqlCountOfEventsByAppIdWithGroupBy();
